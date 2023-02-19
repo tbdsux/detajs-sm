@@ -1,3 +1,4 @@
-import { Deta } from "./deta";
-
-export default Deta;
+export * from "./deta";
+export * from "./base";
+export * from "./types";
+export * from "./utils";

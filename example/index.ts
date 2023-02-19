@@ -1,4 +1,4 @@
-import Deta from "detajs-sm";
+import { Deta } from "detajs-sm";
 
 export interface User {
   name: string;

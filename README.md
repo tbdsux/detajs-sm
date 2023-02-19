@@ -25,7 +25,7 @@ pnpm add detajs-sm
 Usage is similar with the official [Javascript SDK](https://github.com/deta/deta-javascript)
 
 ```ts
-import Deta from "detajs-sm";
+import { Deta } from "detajs-sm";
 
 export interface User {
   name: string;
