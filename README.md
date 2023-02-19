@@ -5,9 +5,20 @@ Small Deta Base wrapper with Typescript support.
 ### What's different?
 
 This library / package aims to focus more on json object types, so mostly `put` functions will need a json object and won't accept other types.
-Support for custom generic types especially in `get` / fetching is also the goal.
+Support for custom generic types especially in `get` / `fetch` functions is also the goal.
 
 ## Install
+
+```sh
+# npm
+npm install detajs-sm
+
+# yarn
+yarn add detajs-sm
+
+# pnpm
+pnpm add detajs-sm
+```
 
 ## Usage
 
