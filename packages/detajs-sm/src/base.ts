@@ -41,7 +41,19 @@ class _Base {
     return (await r.json()) as T;
   }
 
-  async put<T extends Record<string, any>>(item: T, key?: string) {
+  /**
+   * Store an item in the database.
+   *
+   * It overwrite the item if the key already exists.
+   *
+   * @param item Item object to store / save to the database.
+   * @param key Key of the item to save.
+   * @returns {Promise<string>}
+   */
+  async put<T extends Record<string, any>>(
+    item: T,
+    key?: string
+  ): Promise<string> {
     const finalItem = {
       ...item,
       key,
@@ -60,7 +72,13 @@ class _Base {
     return r.processed.items[0].key;
   }
 
-  async get<T extends GetResponse>(key: string) {
+  /**
+   * Get / retrieve a stored item from the database with the given key.
+   * 
+   * @param key The key of the item to get.
+   * @returns {Promise<T>}
+   */
+  async get<T extends GetResponse>(key: string): Promise<T> {
     if (key === "") {
       throw new Error("Key cannot be empty.");
     }
@@ -70,7 +88,13 @@ class _Base {
     return r;
   }
 
-  async delete(key: string) {
+  /**
+   * Delete an item from the database with the given key.
+   * 
+   * @param key The key of the item to delete / remove.
+   * @returns {Promise<null>}
+   */
+  async delete(key: string): Promise<null> {
     if (key === "") {
       throw new Error("Key cannot be empty.");
     }
@@ -81,7 +105,17 @@ class _Base {
     return null;
   }
 
-  async insert<T extends Record<string, any>>(item: T, key?: string) {
+  /**
+   * Insert a single item into a Base.
+   * 
+   * It will raise an error if the key already exists in the database.
+   * Note: `insert` is roughly 2x slower than `put`
+   * 
+   * @param item The item to save / store to the database.
+   * @param key Key of the item if not included with the item object.
+   * @returns {Promise<GetResponse>}
+   */
+  async insert<T extends Record<string, any>>(item: T, key?: string): Promise<GetResponse> {
     const finalItem = {
       ...item,
       key,
@@ -94,7 +128,14 @@ class _Base {
     return r;
   }
 
-  async update<T extends Record<string, any>>(updates: T, key: string) {
+  /**
+   * Update an existing item from the database.
+   * 
+   * @param updates A json object describing the updates on the item.
+   * @param key The key of the item to be updated.
+   * @returns {Promise<null>}
+   */
+  async update<T extends Record<string, any>>(updates: T, key: string): Promise<null> {
     if (key === "") {
       throw new Error("Key cannot be empty.");
     }
@@ -143,10 +184,16 @@ class _Base {
     return null;
   }
 
+  /**
+   * 
+   * @param query A single or a list of query objects. If omitted, will fetch all items in the database (up to 1mn)
+   * @param options 
+   * @returns {Promise<FetchResponse<T>>}
+   */
   async fetch<T extends GetResponse>(
     query: Record<string, any> | Record<string, any>[] = {},
     options?: FetchOptions
-  ) {
+  ): Promise<FetchResponse<T>> {
     const payload = {
       query: Array.isArray(query) ? query : [query],
       limit: options?.limit,

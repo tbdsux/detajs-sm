@@ -37,8 +37,17 @@ export interface FetchRawResponse<T extends GetResponse> {
 }
 
 export interface FetchResponse<T extends GetResponse> {
+  /**
+   * List of items retrieved.
+   */
   items: T[];
+  /**
+   * The number of items in the response.
+   */
   count: number;
+  /**
+   * The last key seen in the fetch response. If `undefined`, further items can be retrieved more.
+   */
   last?: string;
 }
 
