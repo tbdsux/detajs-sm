@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "CommonJS",
     "target": "ES2015",
+    "lib": ["ES6"],
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
+    "moduleResolution": "node",
     "outDir": "./dist"
   },
   "include": ["./packages"]

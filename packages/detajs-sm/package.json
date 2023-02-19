@@ -4,6 +4,11 @@
   "description": "A small Deta Base wrapper with Typescript support.",
   "main": "dist/pkg.cjs.js",
   "module": "dist/pkg.esm.js",
+  "exports": {
+    "import": "./dist/pkg.esm.js",
+    "require": "./dist/pkg.cjs.js",
+    "types": "./dist/types/index.d.ts"
+  },
   "scripts": {
     "build": "bunchee ./src/index.ts"
   },
