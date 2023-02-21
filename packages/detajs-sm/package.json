@@ -1,6 +1,6 @@
 {
   "name": "detajs-sm",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "A small Deta Base wrapper with Typescript support.",
   "main": "dist/pkg.cjs.js",
   "module": "dist/pkg.esm.js",
