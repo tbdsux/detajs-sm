@@ -57,6 +57,16 @@ async function put() {
 }
 put();
 
+async function putWithOptions() {
+  const expiringUser: User = {
+    name: "expiring user",
+  };
+
+  const userKey = await users.put(expiringUser, undefined, { expireIn: 300 });
+  console.log(userKey);
+}
+putWithOptions();
+
 async function putMany() {
   const u1: User = {
     name: "user 1",

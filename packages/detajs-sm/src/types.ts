@@ -7,6 +7,11 @@ export interface PutResponse {
   };
 }
 
+export interface PutOptions {
+  expireIn?: number;
+  expireAt?: Date | number;
+}
+
 export interface GetResponse extends Record<string, any> {
   key: string;
 }

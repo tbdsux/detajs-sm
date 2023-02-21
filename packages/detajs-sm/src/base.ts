@@ -5,11 +5,12 @@ import {
   FetchRawResponse,
   FetchResponse,
   GetResponse,
+  PutOptions,
   PutResponse,
   UpdatePayloadProps,
   UpdateResponse,
 } from "./types";
-import { BaseAction, BaseUtilsActions } from "./utils";
+import { BaseAction, BaseUtilsActions, getTTL } from "./utils";
 
 const BASE_URL = "https://database.deta.sh/v1";
 
@@ -95,17 +96,26 @@ class _Base {
    *
    * @param item Item object to store / save to the database.
    * @param key Key of the item to save.
+   * @param options Put options.
    * @returns {Promise<string>}
    */
   async put<T extends Record<string, any>>(
     item: T,
-    key?: string
+    key?: string,
+    options?: PutOptions
   ): Promise<string> {
+    const { ttl, error: ttlError } = getTTL(
+      options?.expireIn,
+      options?.expireAt
+    );
+    if (ttlError) throw ttlError;
+
     const _key = key ? key.trim() : undefined;
 
     const finalItem = {
       ...item,
-      key: _key,
+      ...(key ? { key: _key } : {}),
+      ...(ttl ? { __expires: ttl } : {}),
     };
 
     const response = await this.putMany([finalItem]);
@@ -171,15 +181,26 @@ class _Base {
    *
    * @param item The item to save / store to the database.
    * @param key Key of the item if not included with the item object.
+   * @param options Insert options.
    * @returns {Promise<GetResponse>}
    */
   async insert<T extends Record<string, any>>(
     item: T,
-    key?: string
+    key?: string,
+    options?: PutOptions
   ): Promise<GetResponse> {
+    const { ttl, error: ttlError } = getTTL(
+      options?.expireIn,
+      options?.expireAt
+    );
+    if (ttlError) throw ttlError;
+
+    const _key = key ? key.trim() : undefined;
+
     const finalItem = {
       ...item,
-      key,
+      ...(key ? { key: _key } : {}),
+      ...(ttl ? { __expires: ttl } : {}),
     };
 
     const { response, error } = await this.request<GetResponse>(
