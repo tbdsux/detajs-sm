@@ -1,5 +1,6 @@
 import fetch from "cross-fetch";
 import {
+  ClientErrorResponse,
   FetchOptions,
   FetchRawResponse,
   FetchResponse,
@@ -23,22 +24,46 @@ class _Base {
     this.baseUrl = `${BASE_URL}/${projectId}/${name}`;
   }
 
-  private async request<T>(url: string, method: string, headers?: HeadersInit) {
-    const r = await fetch(this.baseUrl + `${url}`, {
-      ...headers,
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "X-API-Key": this.projectKey,
-      },
-    });
+  private async request<T extends Record<string, any>>(
+    url: string,
+    method: string,
+    headers?: HeadersInit
+  ) {
+    let response: T | undefined = undefined;
+    let status: number = 0;
+    let error: Error | null = null;
 
-    if (!r.ok) {
-      // TODO: update error message
-      throw new Error("Failed request.");
+    try {
+      const r = await fetch(this.baseUrl + `${url}`, {
+        ...headers,
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": this.projectKey,
+        },
+      });
+
+      response = (await r.json()) as T;
+      status = r.status;
+
+      if (!r.ok && status !== 404) {
+        const errJson = (await r.json()) as ClientErrorResponse;
+
+        error = new Error(
+          `${status} | ${
+            errJson.errors.length > 0 ? errJson.errors[0] : "Unknown error..."
+          }`
+        );
+      }
+    } catch (e) {
+      error = new Error(String(e));
     }
 
-    return (await r.json()) as T;
+    if (!response) {
+      throw new Error("Response is empty, maybe something is wrong?");
+    }
+
+    return { response, status, error };
   }
 
   /**
@@ -59,38 +84,53 @@ class _Base {
       key,
     };
 
-    const r = await this.request<PutResponse>("/items", "PUT", {
-      body: JSON.stringify({ items: [finalItem] }),
-    });
+    const { response, error } = await this.request<PutResponse>(
+      "/items",
+      "PUT",
+      {
+        body: JSON.stringify({ items: [finalItem] }),
+      }
+    );
 
-    if (r.processed.items.length == 0) {
+    if (error) throw error;
+
+    if (response.processed.items.length == 0) {
       throw new Error(
         "Failed to save item to Base because of internal processing."
       );
     }
 
-    return r.processed.items[0].key;
+    return response.processed.items[0].key;
   }
 
   /**
    * Get / retrieve a stored item from the database with the given key.
-   * 
+   *
    * @param key The key of the item to get.
-   * @returns {Promise<T>}
+   * @returns {Promise<T | null>}
    */
-  async get<T extends GetResponse>(key: string): Promise<T> {
+  async get<T extends GetResponse>(key: string): Promise<T | null> {
     if (key === "") {
       throw new Error("Key cannot be empty.");
     }
 
-    const r = await this.request<T>(`/items/${key}`, "GET");
+    const { response, status, error } = await this.request<T>(
+      `/items/${key}`,
+      "GET"
+    );
 
-    return r;
+    if (status === 404) {
+      return null;
+    }
+
+    if (error) throw error;
+
+    return response;
   }
 
   /**
    * Delete an item from the database with the given key.
-   * 
+   *
    * @param key The key of the item to delete / remove.
    * @returns {Promise<null>}
    */
@@ -100,42 +140,56 @@ class _Base {
     }
 
     // API Always returns 200 reegardless if an item with the key exists or not.
-    await this.request(`/items/${key}`, "DELETE");
+    const { error } = await this.request(`/items/${key}`, "DELETE");
+
+    if (error) throw error;
 
     return null;
   }
 
   /**
    * Insert a single item into a Base.
-   * 
+   *
    * It will raise an error if the key already exists in the database.
    * Note: `insert` is roughly 2x slower than `put`
-   * 
+   *
    * @param item The item to save / store to the database.
    * @param key Key of the item if not included with the item object.
    * @returns {Promise<GetResponse>}
    */
-  async insert<T extends Record<string, any>>(item: T, key?: string): Promise<GetResponse> {
+  async insert<T extends Record<string, any>>(
+    item: T,
+    key?: string
+  ): Promise<GetResponse> {
     const finalItem = {
       ...item,
       key,
     };
 
-    const r = await this.request<GetResponse>("/items", "POST", {
-      body: JSON.stringify({ item: finalItem }),
-    });
+    const { response, error } = await this.request<GetResponse>(
+      "/items",
+      "POST",
+      {
+        body: JSON.stringify({ item: finalItem }),
+      }
+    );
 
-    return r;
+    if (error) throw error;
+
+    return response;
   }
 
   /**
    * Update an existing item from the database.
-   * 
+   *
    * @param updates A json object describing the updates on the item.
    * @param key The key of the item to be updated.
    * @returns {Promise<null>}
    */
-  async update<T extends Record<string, any>>(updates: T, key: string): Promise<null> {
+  async update<T extends Record<string, any>>(
+    updates: T,
+    key: string
+  ): Promise<null> {
     if (key === "") {
       throw new Error("Key cannot be empty.");
     }
@@ -177,17 +231,23 @@ class _Base {
       payload.set[key] = v;
     }
 
-    await this.request<UpdateResponse>(`/items/${key}`, "PATCH", {
-      body: JSON.stringify(payload),
-    });
+    const { error } = await this.request<UpdateResponse>(
+      `/items/${key}`,
+      "PATCH",
+      {
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (error) throw error;
 
     return null;
   }
 
   /**
-   * 
+   *
    * @param query A single or a list of query objects. If omitted, will fetch all items in the database (up to 1mn)
-   * @param options 
+   * @param options
    * @returns {Promise<FetchResponse<T>>}
    */
   async fetch<T extends GetResponse>(
@@ -200,14 +260,20 @@ class _Base {
       last: options?.last,
     };
 
-    const r = await this.request<FetchRawResponse<T>>("/query", "POST", {
-      body: JSON.stringify(payload),
-    });
+    const { response, error } = await this.request<FetchRawResponse<T>>(
+      "/query",
+      "POST",
+      {
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (error) throw error;
 
     return <FetchResponse<T>>{
-      items: r.items,
-      count: r.paging?.size,
-      last: r.paging?.last,
+      items: response.items,
+      count: response.paging?.size,
+      last: response.paging?.last,
     };
   }
 }
