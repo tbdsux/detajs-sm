@@ -67,6 +67,28 @@ class _Base {
   }
 
   /**
+   * Store multiple items to the database.
+   *
+   * @param items Array / list of items to store to the database.
+   * @returns {Promise<PutResponse>}
+   */
+  async putMany<T extends Record<string, any>>(
+    items: T[]
+  ): Promise<PutResponse> {
+    const { response, error } = await this.request<PutResponse>(
+      "/items",
+      "PUT",
+      {
+        body: JSON.stringify({ items }),
+      }
+    );
+
+    if (error) throw error;
+
+    return response;
+  }
+
+  /**
    * Store an item in the database.
    *
    * It overwrite the item if the key already exists.
@@ -79,20 +101,14 @@ class _Base {
     item: T,
     key?: string
   ): Promise<string> {
+    const _key = key ? key.trim() : undefined;
+
     const finalItem = {
       ...item,
-      key,
+      key: _key,
     };
 
-    const { response, error } = await this.request<PutResponse>(
-      "/items",
-      "PUT",
-      {
-        body: JSON.stringify({ items: [finalItem] }),
-      }
-    );
-
-    if (error) throw error;
+    const response = await this.putMany([finalItem]);
 
     if (response.processed.items.length == 0) {
       throw new Error(

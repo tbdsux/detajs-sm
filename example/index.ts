@@ -56,3 +56,16 @@ async function put() {
   console.log(userKey);
 }
 put();
+
+async function putMany() {
+  const u1: User = {
+    name: "user 1",
+  };
+  const u2: User = {
+    name: "user 2",
+  };
+
+  const response = await users.putMany([u1, u2]);
+  console.log(response);
+}
+putMany();
