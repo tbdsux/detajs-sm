@@ -11,7 +11,7 @@ import {
   UpdatePayloadProps,
   UpdateResponse,
 } from "./types";
-import { BaseAction, BaseUtilsActions, getTTL } from "./utils";
+import { BaseAction, BaseUtils, BaseUtilsActions, getTTL } from "./utils";
 
 const BASE_URL = "https://database.deta.sh/v1";
 
@@ -19,11 +19,13 @@ class _Base<K extends BaseDataProps> {
   projectKey: string;
   name: string;
   baseUrl: string;
+  util: BaseUtils;
 
   constructor(name: string, projectKey: string, projectId: string) {
     this.name = name;
     this.projectKey = projectKey;
     this.baseUrl = `${BASE_URL}/${projectId}/${name}`;
+    this.util = new BaseUtils();
   }
 
   private async request<T extends Record<string, any>>(
@@ -224,10 +226,11 @@ class _Base<K extends BaseDataProps> {
    * @param key The key of the item to be updated.
    * @returns {Promise<null>}
    */
-  async update<T extends Record<keyof K, BaseAction | any>>(
-    updates: T,
-    key: string
-  ): Promise<null> {
+  async update<
+    T extends
+      | Record<string, any | BaseAction>
+      | { [k in keyof K]?: any | BaseAction }
+  >(updates: T, key: string): Promise<null> {
     if (key === "") {
       throw new Error("Key cannot be empty.");
     }

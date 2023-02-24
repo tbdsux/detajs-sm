@@ -21,7 +21,7 @@ class BaseUtils {
     return new BaseAction(BaseUtilsActions.Delete);
   }
 
-  increment(value: number) {
+  increment(value: number = 1) {
     return new BaseAction(BaseUtilsActions.Increment, value);
   }
 
