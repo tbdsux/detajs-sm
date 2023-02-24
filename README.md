@@ -4,8 +4,7 @@ Small Deta Base wrapper with Typescript support.
 
 ### What's different?
 
-This library / package aims to focus more on json object types, so mostly `put` functions will need a json object and won't accept other types.
-Support for custom generic types especially in `get` / `fetch` functions is also the goal.
+This library / package aims to focus more on json object types, so most functions will implement the type defined when initiating a base.
 
 ## Install
 
@@ -29,20 +28,15 @@ import { Deta } from "detajs-sm";
 
 export interface User {
   name: string;
-}
-
-export interface IUser extends User {
-  key: string;
+  key: string; // needs to be set
 }
 
 const deta = Deta();
-const users = deta.Base("users");
+const usersBase = deta.Base<User>("allUsers");
 
-const u: User = {
-  name: "random",
-};
-
-const userKey = await users.put(u);
+const userKey = await users.put({
+  name: "user",
+});
 console.log(userKey);
 ```
 

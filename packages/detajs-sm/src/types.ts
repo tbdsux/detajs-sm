@@ -1,4 +1,4 @@
-export interface BaseDataProps {
+export interface BaseDataProps extends Record<string, any> {
   key: string;
   __expires?: number;
 }
