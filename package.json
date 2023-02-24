@@ -1,6 +1,6 @@
 {
   "name": "detajs-sm-monorepo",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "description": "A small Deta Base wrapper with Typescript support.",
   "scripts": {
