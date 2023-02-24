@@ -1,6 +1,6 @@
 {
   "name": "detajs-sm",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A small Deta Base wrapper with Typescript support.",
   "main": "dist/pkg.cjs.js",
   "module": "dist/pkg.esm.js",
@@ -10,7 +10,9 @@
     "types": "./dist/types/index.d.ts"
   },
   "scripts": {
-    "build": "bunchee ./src/index.ts"
+    "build": "bunchee ./src/index.ts",
+    "clean": "rimraf -- *.tgz dist",
+    "prepublishOnly": "pnpm clean && pnpm build"
   },
   "types": "dist/types/index.d.ts",
   "keywords": [
