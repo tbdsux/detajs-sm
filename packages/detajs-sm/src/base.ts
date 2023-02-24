@@ -1,5 +1,6 @@
 import fetch from "cross-fetch";
 import {
+  BaseDataProps,
   ClientErrorResponse,
   FetchOptions,
   FetchRawResponse,
@@ -14,7 +15,7 @@ import { BaseAction, BaseUtilsActions, getTTL } from "./utils";
 
 const BASE_URL = "https://database.deta.sh/v1";
 
-class _Base {
+class _Base<K extends BaseDataProps> {
   projectKey: string;
   name: string;
   baseUrl: string;
@@ -73,10 +74,10 @@ class _Base {
    * @param items Array / list of items to store to the database.
    * @returns {Promise<PutResponse>}
    */
-  async putMany<T extends Record<string, any>>(
-    items: T[]
-  ): Promise<PutResponse> {
-    const { response, error } = await this.request<PutResponse>(
+  async putMany(
+    items: K[] | Omit<K, "key" | "__expires">[]
+  ): Promise<PutResponse<K>> {
+    const { response, error } = await this.request<PutResponse<K>>(
       "/items",
       "PUT",
       {
@@ -99,8 +100,8 @@ class _Base {
    * @param options Put options.
    * @returns {Promise<string>}
    */
-  async put<T extends Record<string, any>>(
-    item: T,
+  async put(
+    item: K | Omit<K, "key" | "__expires">,
     key?: string,
     options?: PutOptions
   ): Promise<string> {
@@ -135,12 +136,12 @@ class _Base {
    * @param key The key of the item to get.
    * @returns {Promise<T | null>}
    */
-  async get<T extends GetResponse>(key: string): Promise<T | null> {
+  async get(key: string): Promise<K | null> {
     if (key === "") {
       throw new Error("Key cannot be empty.");
     }
 
-    const { response, status, error } = await this.request<T>(
+    const { response, status, error } = await this.request<K>(
       `/items/${key}`,
       "GET"
     );
@@ -184,8 +185,8 @@ class _Base {
    * @param options Insert options.
    * @returns {Promise<GetResponse>}
    */
-  async insert<T extends Record<string, any>>(
-    item: T,
+  async insert(
+    item: K | Omit<K, "key">,
     key?: string,
     options?: PutOptions
   ): Promise<GetResponse> {
@@ -223,7 +224,7 @@ class _Base {
    * @param key The key of the item to be updated.
    * @returns {Promise<null>}
    */
-  async update<T extends Record<string, any>>(
+  async update<T extends Record<keyof K, BaseAction | any>>(
     updates: T,
     key: string
   ): Promise<null> {
@@ -287,7 +288,7 @@ class _Base {
    * @param options
    * @returns {Promise<FetchResponse<T>>}
    */
-  async fetch<T extends GetResponse>(
+  async fetch<T extends GetResponse = K>(
     query: Record<string, any> | Record<string, any>[] = {},
     options?: FetchOptions
   ): Promise<FetchResponse<T>> {

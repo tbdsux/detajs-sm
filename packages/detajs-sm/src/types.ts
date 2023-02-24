@@ -1,9 +1,14 @@
-export interface PutResponse {
+export interface BaseDataProps {
+  key: string;
+  __expires?: number;
+}
+
+export interface PutResponse<T extends BaseDataProps> {
   processed: {
-    items: Record<string, any>[];
+    items: T[];
   };
   failed: {
-    items: Record<string, any>[];
+    items: T[];
   };
 }
 
@@ -12,9 +17,7 @@ export interface PutOptions {
   expireAt?: Date | number;
 }
 
-export interface GetResponse extends Record<string, any> {
-  key: string;
-}
+export type GetResponse = BaseDataProps;
 
 export interface UpdatePayloadProps {
   set: Record<string, any>;
@@ -30,7 +33,7 @@ export interface UpdateResponse extends UpdatePayloadProps {
 
 export interface FetchOptions {
   limit: number;
-  last: string;
+  last?: string;
 }
 
 export interface FetchRawResponse<T extends GetResponse> {

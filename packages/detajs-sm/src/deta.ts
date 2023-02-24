@@ -1,4 +1,5 @@
 import { _Base } from "./base";
+import { BaseDataProps } from "./types";
 
 class _Deta {
   projectKey: string;
@@ -20,8 +21,8 @@ class _Deta {
     this.projectKey = _projectKey;
   }
 
-  Base(name: string) {
-    return new _Base(name, this.projectKey, this.projectId);
+  Base<K extends BaseDataProps = BaseDataProps>(name: string) {
+    return new _Base<K>(name, this.projectKey, this.projectId);
   }
 }
 
