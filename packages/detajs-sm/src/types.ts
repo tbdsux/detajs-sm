@@ -32,7 +32,7 @@ export interface UpdateResponse extends UpdatePayloadProps {
 }
 
 export interface FetchOptions {
-  limit: number;
+  limit?: number;
   last?: string;
 }
 
@@ -54,7 +54,7 @@ export interface FetchResponse<T extends GetResponse> {
    */
   count: number;
   /**
-   * The last key seen in the fetch response. If `undefined`, further items can be retrieved more.
+   * The last key seen in the fetch response. If `undefined`, there are no more items that can be retrieved.
    */
   last?: string;
 }
